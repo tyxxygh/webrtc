@@ -78,6 +78,7 @@ class VideoCaptureWinUWP
   explicit VideoCaptureWinUWP();
 
   int32_t Init(const char* device_id);
+  static bool EnableHoloLensMRC;
 
   // Overrides from VideoCaptureImpl.
   virtual int32_t StartCapture(const VideoCaptureCapability& capability);

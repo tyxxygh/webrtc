@@ -176,6 +176,8 @@ void DisplayOrientation::OnOrientationChanged(DisplayInformation^ sender,
     listener_->OnDisplayOrientationChanged(sender->CurrentOrientation);
 }
 
+bool webrtc::videocapturemodule::VideoCaptureWinUWP::EnableHoloLensMRC = false;
+
 ref class CaptureDevice sealed {
  public:
   virtual ~CaptureDevice();
@@ -399,7 +401,7 @@ void CaptureDevice::StartCapture(
 #ifdef WIN10
   // Tell the video device controller to optimize for Low Latency then Power consumption
   media_capture_->VideoDeviceController->DesiredOptimization =
-    Windows::Media::Devices::MediaCaptureOptimization::LatencyThenPower;
+    Windows::Media::Devices::MediaCaptureOptimization::LatencyThenQuality;
 #endif
 
   media_sink_ = ref new VideoCaptureMediaSinkProxyWinUWP();
@@ -414,9 +416,10 @@ void CaptureDevice::StartCapture(
       video_encoding_properties](IMediaExtension^ media_extension) {
 
 	  Platform::String^ deviceFamily = Windows::System::Profile::AnalyticsInfo::VersionInfo->DeviceFamily;
-	  if (deviceFamily->Equals(L"Windows.Holographic")) {
+	  if (VideoCaptureWinUWP::EnableHoloLensMRC && deviceFamily->Equals(L"Windows.Holographic")) {
 		  auto mrcVideoEffectDefinition = ref new MrcVideoEffectDefinition;
 		  mrcVideoEffectDefinition->StreamType = MediaStreamType::VideoRecord;
+		  mrcVideoEffectDefinition->RecordingIndicatorEnabled = false;
 		  auto addEffectTask = Concurrency::create_task(media_capture_->AddVideoEffectAsync(mrcVideoEffectDefinition, MediaStreamType::VideoRecord)).then([this](IMediaExtension ^videoExtension)
 		  {
 			  OutputDebugString(L"VideoEffect Added\n");
