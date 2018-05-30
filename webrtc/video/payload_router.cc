@@ -146,6 +146,7 @@ EncodedImageCallback::Result PayloadRouter::OnEncodedImage(
   }
   rtp_video_header.video_timing.flags = encoded_image.timing_.flags;
   rtp_video_header.playout_delay = encoded_image.playout_delay_;
+  rtp_video_header.prediction_timestamp = encoded_image.prediction_timestamp_;
 
   int stream_index = rtp_video_header.simulcastIdx;
   RTC_DCHECK_LT(stream_index, rtp_modules_.size());

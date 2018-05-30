@@ -58,6 +58,7 @@ class EncodedImage {
   bool _completeFrame = false;
   AdaptReason adapt_reason_;
   int qp_ = -1;  // Quantizer value.
+  int64_t prediction_timestamp_;
 
   // When an application indicates non-zero values here, it is taken as an
   // indication that all future frames will be constrained with those limits

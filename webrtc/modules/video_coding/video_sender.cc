@@ -316,6 +316,7 @@ int32_t VideoSender::AddVideoFrame(const VideoFrame& videoFrame,
   if (_encoder == nullptr)
     return VCM_UNINITIALIZED;
   SetEncoderParameters(encoder_params, encoder_has_internal_source);
+#if 0
   if (_mediaOpt.DropFrame()) {
     LOG(LS_VERBOSE) << "Drop Frame "
                     << "target bitrate "
@@ -326,6 +327,7 @@ int32_t VideoSender::AddVideoFrame(const VideoFrame& videoFrame,
     post_encode_callback_->OnDroppedFrame();
     return VCM_OK;
   }
+#endif
   // TODO(pbos): Make sure setting send codec is synchronized with video
   // processing so frame size always matches.
   if (!_codecDataBase.MatchesCurrentResolution(videoFrame.width(),

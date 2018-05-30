@@ -810,6 +810,7 @@ struct RTPHeaderExtension {
   // ts_126114v120700p.pdf
   bool hasVideoRotation;
   VideoRotation videoRotation;
+  int64_t prediction_timestamp;
 
   // TODO(ilnik): Refactor this and one above to be rtc::Optional() and remove
   // a corresponding bool flag.

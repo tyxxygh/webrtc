@@ -180,6 +180,25 @@ bool VideoOrientation::Write(uint8_t* data, uint8_t value) {
   return true;
 }
 
+// Coordination of video frame metadata in RTP streams.
+//
+constexpr RTPExtensionType VideoFrameMetadata::kId;
+constexpr uint8_t VideoFrameMetadata::kValueSizeBytes;
+constexpr const char VideoFrameMetadata::kUri[];
+
+bool VideoFrameMetadata::Parse(rtc::ArrayView<const uint8_t> data, int64_t* value) {
+	if (data.size() != 8)
+		return false;
+
+	*value = ByteReader<int64_t>::ReadBigEndian(data.data());
+	return true;
+}
+
+bool VideoFrameMetadata::Write(uint8_t* data, int64_t value) {
+	ByteWriter<int64_t>::WriteBigEndian(data, value);
+	return true;
+}
+
 //   0                   1                   2                   3
 //   0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 //  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+

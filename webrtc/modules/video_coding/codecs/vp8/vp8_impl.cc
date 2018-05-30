@@ -1174,7 +1174,7 @@ int VP8DecoderImpl::Decode(const EncodedImage& input_image,
   vpx_codec_err_t vpx_ret =
       vpx_codec_control(decoder_, VPXD_GET_LAST_QUANTIZER, &qp);
   RTC_DCHECK_EQ(vpx_ret, VPX_CODEC_OK);
-  ret = ReturnFrame(img, input_image._timeStamp, input_image.ntp_time_ms_, qp);
+  ret = ReturnFrame(img, input_image._timeStamp, input_image.ntp_time_ms_, input_image.prediction_timestamp_, qp);
   if (ret != 0) {
     // Reset to avoid requesting key frames too often.
     if (ret < 0 && propagation_cnt_ > 0)
@@ -1193,6 +1193,7 @@ int VP8DecoderImpl::Decode(const EncodedImage& input_image,
 int VP8DecoderImpl::ReturnFrame(const vpx_image_t* img,
                                 uint32_t timestamp,
                                 int64_t ntp_time_ms,
+								int64_t prediction_timestamp,
                                 int qp) {
   if (img == NULL) {
     // Decoder OK and NULL image => No show frame
@@ -1227,6 +1228,7 @@ int VP8DecoderImpl::ReturnFrame(const vpx_image_t* img,
 
   VideoFrame decoded_image(buffer, timestamp, 0, kVideoRotation_0);
   decoded_image.set_ntp_time_ms(ntp_time_ms);
+  decoded_image.set_prediction_timestamp(prediction_timestamp);
   decode_complete_callback_->Decoded(decoded_image, rtc::Optional<int32_t>(),
                                      rtc::Optional<uint8_t>(qp));
 

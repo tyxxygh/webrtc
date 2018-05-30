@@ -108,6 +108,7 @@ const char kH264FmtpLevelAsymmetryAllowed[] = "level-asymmetry-allowed";
 const char kH264FmtpPacketizationMode[] = "packetization-mode";
 const char kH264FmtpSpropParameterSets[] = "sprop-parameter-sets";
 const char kH264ProfileLevelConstrainedBaseline[] = "42e01f";
+const char kH264UseHWNvencode[] = "use-hw-nvencode";
 
 const int kDefaultVideoMaxFramerate = 60;
 }  // namespace cricket

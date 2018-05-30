@@ -49,6 +49,7 @@ RtpFrameObject::RtpFrameObject(PacketBuffer* packet_buffer,
   _payloadType = first_packet->payloadType;
   _timeStamp = first_packet->timestamp;
   ntp_time_ms_ = first_packet->ntp_time_ms_;
+  prediction_timestamp_ = first_packet->video_header.prediction_timestamp;
 
   // Setting frame's playout delays to the same values
   // as of the first packet's.
@@ -114,6 +115,7 @@ RtpFrameObject::RtpFrameObject(PacketBuffer* packet_buffer,
   rotation_ = last_packet->video_header.rotation;
   _rotation_set = true;
   content_type_ = last_packet->video_header.content_type;
+  prediction_timestamp_ = last_packet->video_header.prediction_timestamp;
   if (last_packet->video_header.video_timing.flags !=
       TimingFrameFlags::kInvalid) {
     // ntp_time_ms_ may be -1 if not estimated yet. This is not a problem,

@@ -361,6 +361,10 @@ RtpCapabilities WebRtcVideoEngine::GetCapabilities() const {
   capabilities.header_extensions.push_back(
         webrtc::RtpExtension(webrtc::RtpExtension::kVideoTimingUri,
                              webrtc::RtpExtension::kVideoTimingDefaultId));
+  capabilities.header_extensions.push_back(
+	  webrtc::RtpExtension(webrtc::RtpExtension::kVideoFrameMetadataUri,
+		  webrtc::RtpExtension::kVideoFrameMetadataDefaultId));
+
   return capabilities;
 }
 
@@ -420,7 +424,15 @@ static void AppendVideoCodecs(const std::vector<VideoCodec>& input_codecs,
     if (FindMatchingCodec(*unified_codecs, codec))
       continue;
 
-    unified_codecs->push_back(codec);
+	if (CodecNamesEq(codec.name, kH264CodecName))
+	{
+		auto it = unified_codecs->begin();
+		unified_codecs->insert(it, codec);
+	}
+	else
+	{
+		unified_codecs->push_back(codec);
+	}
 
     // Add associated RTX codec for recognized codecs.
     // TODO(deadbeef): Should we add RTX codecs for external codecs whose names
@@ -1130,6 +1142,10 @@ void WebRtcVideoChannel::ConfigureReceiverRtp(
   sp.GetFidSsrc(ssrc, &config->rtp.rtx_ssrc);
 
   config->rtp.extensions = recv_rtp_extensions_;
+
+  // Enable video frame metadata extenstion.
+  config->rtp.extensions.push_back(webrtc::RtpExtension(
+	  webrtc::RtpExtension::kVideoFrameMetadataUri, webrtc::RtpExtension::kVideoFrameMetadataDefaultId));
 
   // TODO(brandtr): Generalize when we add support for multistream protection.
   flexfec_config->payload_type = recv_flexfec_payload_type_;

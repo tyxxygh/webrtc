@@ -84,6 +84,9 @@ const char RtpExtension::kVideoTimingUri[] =
     "http://www.webrtc.org/experiments/rtp-hdrext/video-timing";
 const int RtpExtension::kVideoTimingDefaultId = 8;
 
+const char RtpExtension::kVideoFrameMetadataUri[] = "https://github.com/CatalystCode/3dtoolkit/blob/master/Libraries/WebRTC/VideoFrameMetadata.md";
+const int RtpExtension::kVideoFrameMetadataDefaultId = 9;
+
 const char RtpExtension::kEncryptHeaderExtensionsUri[] =
     "urn:ietf:params:rtp-hdrext:encrypt";
 
@@ -102,6 +105,7 @@ bool RtpExtension::IsSupportedForVideo(const std::string& uri) {
          uri == webrtc::RtpExtension::kTransportSequenceNumberUri ||
          uri == webrtc::RtpExtension::kPlayoutDelayUri ||
          uri == webrtc::RtpExtension::kVideoContentTypeUri ||
+	     uri == webrtc::RtpExtension::kVideoFrameMetadataUri ||
          uri == webrtc::RtpExtension::kVideoTimingUri;
 }
 
