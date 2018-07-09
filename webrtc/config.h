@@ -120,6 +120,10 @@ struct RtpExtension {
   static const char kPlayoutDelayUri[];
   static const int kPlayoutDelayDefaultId;
 
+  // Header extension for video frame metadata
+  static const char kVideoFrameMetadataUri[];
+  static const int kVideoFrameMetadataDefaultId;
+
   // Encryption of Header Extensions, see RFC 6904 for details:
   // https://tools.ietf.org/html/rfc6904
   static const char kEncryptHeaderExtensionsUri[];

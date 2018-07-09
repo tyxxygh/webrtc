@@ -56,6 +56,7 @@ struct RTPVideoHeader {
   uint16_t width;  // size
   uint16_t height;
   VideoRotation rotation;
+  int64_t prediction_timestamp;
 
   PlayoutDelay playout_delay;
 

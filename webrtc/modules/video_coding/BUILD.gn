@@ -175,29 +175,30 @@ rtc_static_library("webrtc_h264") {
       "../../media:rtc_media_base",
     ]
   } else {
-    if (rtc_use_h264) {
-      defines += [ "WEBRTC_USE_H264" ]
-
-      if (rtc_initialize_ffmpeg) {
-        defines += [ "WEBRTC_INITIALIZE_FFMPEG" ]
-        deps += [ "//third_party/ffmpeg:ffmpeg" ]
+       if (rtc_use_h264) {
+            defines += [ "WEBRTC_USE_H264" ]
+            if (rtc_initialize_ffmpeg) {
+              defines += [ "WEBRTC_INITIALIZE_FFMPEG" ]
+              deps += [ "//third_party/ffmpeg:ffmpeg" ]
+            }
+            sources += [
+              "codecs/h264/h264_decoder_impl.cc",
+              "codecs/h264/h264_decoder_impl.h",
+              "codecs/h264/h264_encoder_impl.cc",
+              "codecs/h264/h264_encoder_impl.h",
+            ]
+            deps += [
+              "//third_party/openh264:encoder",
+              "../../common_video",
+              "../../media:rtc_media_base",
+              "//third_party/ffmpeg:ffmpeg",
+              "../../rtc_base:rtc_base",
+              "../../rtc_base:rtc_base_approved",
+              "../../rtc_base:rtc_json",
+              "//third_party:nvpipe",
+              "//third_party/openh264:encoder",
+            ]
       }
-      sources += [
-        "codecs/h264/h264_decoder_impl.cc",
-        "codecs/h264/h264_decoder_impl.h",
-        "codecs/h264/h264_encoder_impl.cc",
-        "codecs/h264/h264_encoder_impl.h",
-      ]
-
-      if(use_openh264) {
-        defines += [ "WEBRTC_USE_OPENH264" ]
-        deps += [ "//third_party/openh264:encoder" ]
-      }
-      deps += [
-        "../../common_video",
-        "../../media:rtc_media_base",
-      ]
-    }
   }
 }
 

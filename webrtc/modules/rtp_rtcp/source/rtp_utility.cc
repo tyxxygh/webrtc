@@ -482,6 +482,10 @@ void RtpHeaderParser::ParseOneByteExtensionHeader(
           header->extension.mid.Set(rtc::MakeArrayView(ptr, len + 1));
           break;
         }
+		case kRtpExtensionVideoFrameMetadata: {
+			header->extension.prediction_timestamp = ByteReader<int64_t>::ReadBigEndian(ptr);
+			break;
+		}
         case kRtpExtensionNone:
         case kRtpExtensionNumberOfExtensions: {
           RTC_NOTREACHED() << "Invalid extension type: " << type;

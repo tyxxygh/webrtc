@@ -336,7 +336,10 @@ bool RTPSenderVideo::SendVideo(RtpVideoCodecTypes video_type,
         last_packet->SetExtension<VideoTimingExtension>(
             video_header->video_timing);
       }
-    }
+
+	  // Sets the prediction timestamp.
+	  last_packet->SetExtension<VideoFrameMetadata>(video_header->prediction_timestamp);
+	}
 
     // FEC settings.
     const FecProtectionParams& fec_params =

@@ -281,6 +281,7 @@ int32_t RtpVideoStreamReceiver::OnReceivedPayloadData(
     packet.dataPtr = data;
   }
 
+  packet.video_header.prediction_timestamp = rtp_header->header.extension.prediction_timestamp;
   packet_buffer_->InsertPacket(&packet);
   return 0;
 }
@@ -556,6 +557,7 @@ void RtpVideoStreamReceiver::NotifyReceiverOfFecPacket(
     rtp_header.type.Video.video_timing = header.extension.video_timing;
   }
   rtp_header.type.Video.playout_delay = header.extension.playout_delay;
+  rtp_header.type.Video.prediction_timestamp = header.extension.prediction_timestamp;
 
   OnReceivedPayloadData(nullptr, 0, &rtp_header);
 }

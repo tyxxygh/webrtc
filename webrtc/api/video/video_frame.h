@@ -74,6 +74,12 @@ class VideoFrame {
   // TODO(nisse): Deprecated. Migrate all users to timestamp_us().
   int64_t ntp_time_ms() const { return ntp_time_ms_; }
 
+  // Set prediction timestamp in 100-nanosecond intervals.
+  void set_prediction_timestamp(int64_t prediction_timestamp) { prediction_timestamp_ = prediction_timestamp; }
+
+  // Get prediction timestamp in 100-nanosecond intervals.
+  int64_t prediction_timestamp() const { return prediction_timestamp_; }
+
   // Naming convention for Coordination of Video Orientation. Please see
   // http://www.etsi.org/deliver/etsi_ts/126100_126199/126114/12.07.00_60/ts_126114v120700p.pdf
   //
@@ -101,6 +107,13 @@ class VideoFrame {
     return video_frame_buffer()->type() == VideoFrameBuffer::Type::kNative;
   }
 
+  // Set OpenGL frame buffer.
+  void set_frame_buffer(uint8_t* frame_buffer) { frame_buffer_ = frame_buffer; }
+
+  // Get frame buffer.
+  uint8_t* frame_buffer() const { return frame_buffer_; }
+
+
  private:
   // An opaque reference counted handle that stores the pixel data.
   rtc::scoped_refptr<webrtc::VideoFrameBuffer> video_frame_buffer_;
@@ -108,6 +121,8 @@ class VideoFrame {
   int64_t ntp_time_ms_;
   int64_t timestamp_us_;
   VideoRotation rotation_;
+  uint8_t* frame_buffer_;
+  int64_t prediction_timestamp_;
 };
 
 }  // namespace webrtc

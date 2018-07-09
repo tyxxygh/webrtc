@@ -72,7 +72,7 @@ int NumTemporalLayers() {
 }
 
 // Flags common with screenshare loopback, with equal default values.
-DEFINE_string(codec, "VP8", "Video codec to use.");
+DEFINE_string(codec, "H264", "Video codec to use.");
 std::string Codec() {
   return static_cast<std::string>(FLAG_codec);
 }

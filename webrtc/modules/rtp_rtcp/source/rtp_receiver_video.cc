@@ -112,6 +112,11 @@ int32_t RTPReceiverVideo::ParseRtpPacket(WebRtcRTPHeader* rtp_header,
   rtp_header->type.Video.playout_delay =
       rtp_header->header.extension.playout_delay;
 
+  // Retrieve the prediction timestamp.
+  rtp_header->type.Video.prediction_timestamp =
+	  rtp_header->header.extension.prediction_timestamp;
+
+
   return data_callback_->OnReceivedPayloadData(parsed_payload.payload,
                                                parsed_payload.payload_length,
                                                rtp_header) == 0

@@ -90,6 +90,17 @@ class VideoOrientation {
   static bool Write(uint8_t* data, uint8_t value);
 };
 
+class VideoFrameMetadata {
+public:
+	static constexpr RTPExtensionType kId = kRtpExtensionVideoFrameMetadata;
+	static constexpr uint8_t kValueSizeBytes = 8;
+	static constexpr const char kUri[] = "https://github.com/CatalystCode/3dtoolkit/blob/master/Libraries/WebRTC/VideoFrameMetadata.md";
+
+	static bool Parse(rtc::ArrayView<const uint8_t> data, int64_t* value);
+	static size_t ValueSize(int64_t value) { return kValueSizeBytes; }
+	static bool Write(uint8_t* data, int64_t value);
+};
+
 class PlayoutDelayLimits {
  public:
   static constexpr RTPExtensionType kId = kRtpExtensionPlayoutDelay;

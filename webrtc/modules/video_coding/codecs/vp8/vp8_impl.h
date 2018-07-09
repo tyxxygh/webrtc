@@ -147,6 +147,7 @@ class VP8DecoderImpl : public VP8Decoder {
   int ReturnFrame(const vpx_image_t* img,
                   uint32_t timeStamp,
                   int64_t ntp_time_ms,
+				  int64_t prediction_timestamp,
                   int qp);
 
   const bool use_postproc_arm_;

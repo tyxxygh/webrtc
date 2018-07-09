@@ -130,6 +130,7 @@ extern const char kH264FmtpLevelAsymmetryAllowed[];
 extern const char kH264FmtpPacketizationMode[];
 extern const char kH264FmtpSpropParameterSets[];
 extern const char kH264ProfileLevelConstrainedBaseline[];
+extern const char kH264UseHWNvencode[];
 
 extern const int kDefaultVideoMaxFramerate;
 }  // namespace cricket
