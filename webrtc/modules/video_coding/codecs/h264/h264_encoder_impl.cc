@@ -33,11 +33,34 @@
 #include <iostream>
 #include <fstream>
 
+#ifndef _WIN32
+//for non-win style dynamic link library loading
+#include <dlfcn.h> 
+#endif
+
 using namespace std;
 
 #define __cu(a) do { CUresult  ret; if ((ret = (a)) != CUDA_SUCCESS) { fprintf(stderr, "%s has returned CUDA error %d\n", #a, ret); return NV_ENC_ERR_GENERIC;}} while(0)
 
 namespace webrtc {
+
+	static std::string ExePath(std::string fileName = "") {
+		#ifdef _WIN32
+			TCHAR buffer[MAX_PATH];
+			GetModuleFileName(nullptr, buffer, MAX_PATH);
+			char charPath[MAX_PATH];
+			wcstombs(charPath, buffer, wcslen(buffer) + 1);
+		#else
+			char charPath[PATH_MAX];
+			ssize_t size = readlink("/proc/self/exe", charPath, sizeof(charPath));
+			if(size > 0 && size < PATH_MAX)
+				charPath[size] = '\0';
+		#endif
+
+
+		std::string::size_type pos = std::string(charPath).find_last_of("\\/");
+		return std::string(charPath).substr(0, pos + 1) + fileName;
+	}
 
 	namespace {
 
@@ -165,8 +188,9 @@ namespace webrtc {
 
 	H264EncoderImpl::H264EncoderImpl(const cricket::VideoCodec& codec)
 		:
+		// Nv pipe
+		m_pNvPipeEncoder(nullptr),
 		encoder_(nullptr),
-		number_of_cores_(0),
 		width_(0),
 		height_(0),
 		max_frame_rate_(0.0f),
@@ -174,13 +198,16 @@ namespace webrtc {
 		max_bps_(0),
 		mode_(kRealtimeVideo),
 		frame_dropping_on_(false),
-		m_use_software_encoding(true),
-		m_first_frame_sent(false),
-		// Nv pipe
-		m_pNvPipeEncoder(NULL),
+
 		key_frame_interval_(0),
 		packetization_mode_(H264PacketizationMode::SingleNalUnit),
+		
 		max_payload_size_(0),
+		number_of_cores_(0),
+		
+		m_use_software_encoding(true),
+		m_first_frame_sent(false),
+
 		encoded_image_callback_(nullptr),
 		last_prediction_timestamp_(0),
 		has_reported_init_(false),
@@ -224,7 +251,7 @@ namespace webrtc {
 		}
 
 		Json::Reader reader;
-		Json::Value root = NULL;
+		Json::Value root;
 		auto encoderConfigPath = ExePath("nvEncConfig.json");
 		std::ifstream file(encoderConfigPath);
 		if (file.good())
@@ -250,9 +277,9 @@ namespace webrtc {
 			GetDefaultNvencodeConfig(m_encodeConfig, root);
 			m_encodeConfig.width = codec_settings->width;
 			m_encodeConfig.height = codec_settings->height;
-
+#ifdef _WIN32
 			hGetProcIDDLL = LoadLibrary(L"Nvpipe.dll");
-			if (hGetProcIDDLL == NULL) {
+			if (hGetProcIDDLL == nullptr) {
 				// Failed to load Nvpipe dll.
 				LOG(LS_ERROR) << "Failed to load Nvpipe dll";
 				ReportError();
@@ -263,7 +290,20 @@ namespace webrtc {
 			destroy_nvpipe_encoder = (nvpipe_destroy)GetProcAddress(hGetProcIDDLL, "nvpipe_destroy");
 			encode_nvpipe = (nvpipe_encode)GetProcAddress(hGetProcIDDLL, "nvpipe_encode");
 			reconfigure_nvpipe = (nvpipe_bitrate)GetProcAddress(hGetProcIDDLL, "nvpipe_bitrate");
+#else
+			m_hProcHandle = dlopen("libnvpipe.so",RTLD_LAZY);
+			if(m_hProcHandle == nullptr)
+			{
+				LOG(LS_ERROR) << "Failed to load libnvpipe.so";
+				ReportError();
+				return WEBRTC_VIDEO_CODEC_ERROR;
+			}
 
+			create_nvpipe_encoder = (nvpipe_create_encoder)dlsym(m_hProcHandle, "nvpipe_create_encoder");
+			destroy_nvpipe_encoder = (nvpipe_destroy)dlsym(m_hProcHandle, "nvpipe_destroy");
+			encode_nvpipe = (nvpipe_encode)dlsym(m_hProcHandle, "nvpipe_encode");
+			reconfigure_nvpipe = (nvpipe_bitrate)dlsym(m_hProcHandle, "nvpipe_bitrate");
+#endif
 			if (!create_nvpipe_encoder || !destroy_nvpipe_encoder || !encode_nvpipe || !reconfigure_nvpipe)
 			{
 				// Failed to load Nvpipe functions.
@@ -363,8 +403,11 @@ namespace webrtc {
 		{
 			destroy_nvpipe_encoder(m_pNvPipeEncoder);
 			m_pNvPipeEncoder = nullptr;
-			FreeLibrary((HMODULE)hGetProcIDDLL);
-
+			#ifdef _WIN32
+				FreeLibrary((HMODULE)hGetProcIDDLL);
+			#else
+				dlclose(m_hProcHandle);
+			#endif
 			delete[] pFrameBuffer;
 			pFrameBuffer = nullptr;
 		}
@@ -414,7 +457,7 @@ namespace webrtc {
 		return WEBRTC_VIDEO_CODEC_OK;
 	}
 
-	void H264EncoderImpl::GetDefaultNvencodeConfig(EncodeConfig &nvEncodeConfig, Json::Value rootValue = NULL)
+	void H264EncoderImpl::GetDefaultNvencodeConfig(EncodeConfig &nvEncodeConfig, Json::Value rootValue)
 	{
 		//Populate with default values
 		{
@@ -426,14 +469,15 @@ namespace webrtc {
 			nvEncodeConfig.intraRefreshEnableFlag = false;
 		}
 
-		if (rootValue != NULL && rootValue.isMember("serverFrameCaptureFPS")) {
+		if (rootValue.isMember("serverFrameCaptureFPS")) {
 			nvEncodeConfig.fps = rootValue.get("serverFrameCaptureFPS", nvEncodeConfig.fps).asInt();
 		}
 
-		if (rootValue != NULL && rootValue.isMember("NvencodeSettings"))
+		if (rootValue.isMember("NvencodeSettings"))
 		{
-			auto nvencodeRoot = rootValue.get("NvencodeSettings", NULL);
-			if (nvencodeRoot == NULL)
+			Json::Value defaultValue = {};
+			auto nvencodeRoot = rootValue.get("NvencodeSettings", defaultValue);
+			if (nvencodeRoot.isNull())
 				return;
 
 			if (nvencodeRoot.isMember("bitrate"))
@@ -628,8 +672,12 @@ namespace webrtc {
 
 	NVENCSTATUS H264EncoderImpl::CheckDeviceNVENCCapability()
 	{
+		#ifdef _WIN32
 		auto nvpipe = LoadLibrary(L"Nvpipe.dll");
-		if (nvpipe == NULL) {
+		#else
+		auto nvpipe = dlopen("libnvpipe.so", RTLD_LAZY);
+		#endif
+		if (nvpipe == nullptr) {
 			return NV_ENC_ERR_NO_ENCODE_DEVICE;
 		}
 

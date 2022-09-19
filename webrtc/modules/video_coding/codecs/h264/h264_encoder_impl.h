@@ -15,6 +15,12 @@
 #include <memory>
 #include <vector>
 
+#ifdef _WIN32
+#else
+#include <unistd.h>
+#include <limits.h>
+#endif
+
 #include "webrtc/common_video/h264/h264_bitstream_parser.h"
 #include "webrtc/modules/video_coding/codecs/h264/include/h264.h"
 #include "webrtc/modules/video_coding/utility/quality_scaler.h"
@@ -31,15 +37,7 @@ class ISVCEncoder;
 
 namespace webrtc {
 
-	static std::string ExePath(std::string fileName = "") {
-		TCHAR buffer[MAX_PATH];
-		GetModuleFileName(NULL, buffer, MAX_PATH);
-		char charPath[MAX_PATH];
-		wcstombs(charPath, buffer, wcslen(buffer) + 1);
-
-		std::string::size_type pos = std::string(charPath).find_last_of("\\/");
-		return std::string(charPath).substr(0, pos + 1) + fileName;
-	}
+	//static std::string ExePath(std::string fileName);
 
 	class H264EncoderImpl : public H264Encoder {
 	public:
@@ -96,8 +94,12 @@ namespace webrtc {
 		//Hw encoder
 		EncodeConfig				m_encodeConfig;
 
+		#ifdef _WIN32
 		// Nv pipe
 		HINSTANCE hGetProcIDDLL;
+		#else
+		void* m_hProcHandle = nullptr;
+		#endif
 		nvpipe* m_pNvPipeEncoder;
 		uint8_t* pFrameBuffer;
 		size_t bufferSize;

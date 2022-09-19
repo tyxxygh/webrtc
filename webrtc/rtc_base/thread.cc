@@ -360,7 +360,6 @@ void Thread::Send(const Location& posted_from,
 
   AssertBlockingIsAllowedOnCurrentThread();
 
-  AutoThread thread;
   Thread *current_thread = Thread::Current();
   RTC_DCHECK(current_thread != nullptr);  // AutoThread ensures this
 

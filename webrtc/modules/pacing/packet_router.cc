@@ -198,7 +198,10 @@ void PacketRouter::SetMaxDesiredReceiveBitrate(uint32_t bitrate_bps) {
       return;
     }
   }
-  SendRemb(bitrate_bps, /*ssrcs=*/{});
+  //when config "use_custom_libcxx=false" in args.gn(linux/templates/gns)
+  //clang complain "error: chosen constructor is explicit in copy-initialization" in debug
+  //SendRemb(bitrate_bps, /*ssrcs=*/{});
+  SendRemb(bitrate_bps, /*ssrcs=*/std::vector<uint32_t>{});
 }
 
 bool PacketRouter::SendRemb(uint32_t bitrate_bps,

@@ -328,6 +328,10 @@ int32_t VideoSender::AddVideoFrame(const VideoFrame& videoFrame,
     return VCM_OK;
   }
 #endif
+  //to avoid compile private variables not used. by ajin
+  if (_mediaOpt.DropFrame()) {
+    post_encode_callback_->OnDroppedFrame();
+  }
   // TODO(pbos): Make sure setting send codec is synchronized with video
   // processing so frame size always matches.
   if (!_codecDataBase.MatchesCurrentResolution(videoFrame.width(),
